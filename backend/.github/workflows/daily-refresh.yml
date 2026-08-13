@@ -1,0 +1,16 @@
+name: Daily stats refresh
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # daily at 00:00 UTC
+  workflow_dispatch: {} # to trigger it manually from GitHub's UI, for testing
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call refresh endpoint
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_APP_URL }}/api/internal/refresh-all" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            --max-time 60
