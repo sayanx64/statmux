@@ -1,0 +1,24 @@
+<svg viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg">
+  <rect width="660" height="220" fill="#08090b"/>
+
+  <g transform="translate(10,10)">
+    <rect x="6" y="6" width="188" height="188" rx="42" fill="#0b0d10" stroke="#242933" stroke-width="2"/>
+    <rect x="24" y="24" width="70" height="152" rx="10" fill="#12151a" stroke="#242933" stroke-width="1.5"/>
+    <rect x="106" y="24" width="70" height="68" rx="10" fill="#12151a" stroke="#242933" stroke-width="1.5"/>
+    <rect x="106" y="108" width="70" height="68" rx="10" fill="#12151a" stroke="#242933" stroke-width="1.5"/>
+    <circle cx="34" cy="36" r="4" fill="#34d399"/>
+    <circle cx="116" cy="36" r="4" fill="#60a5fa"/>
+    <circle cx="116" cy="120" r="4" fill="#fbbf24"/>
+    <text x="59" y="116" font-family="'JetBrains Mono','Fira Code',monospace" font-size="46" font-weight="700" fill="#34d399" text-anchor="middle">&gt;_</text>
+    <rect x="120" y="70" width="6" height="12" fill="#60a5fa"/>
+    <rect x="131" y="62" width="6" height="20" fill="#60a5fa"/>
+    <rect x="142" y="54" width="6" height="28" fill="#60a5fa"/>
+    <rect x="153" y="66" width="6" height="16" fill="#60a5fa"/>
+    <rect x="164" y="58" width="6" height="24" fill="#60a5fa"/>
+    <polyline points="120,158 132,150 143,154 154,140 165,146" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <text x="238" y="115" font-family="'JetBrains Mono','Fira Code',monospace" font-size="54" font-weight="700" fill="#e8eaed">statmux</text>
+  <rect x="600" y="76" width="14" height="40" fill="#34d399"/>
+  <text x="238" y="150" font-family="'JetBrains Mono','Fira Code',monospace" font-size="17" fill="#8b93a1">unified coding analytics, multiplexed</text>
+</svg>
