@@ -1,0 +1,16 @@
+name: Weekly stats digest
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Every Monday at 09:00 UTC
+  workflow_dispatch: {} # to trigger manually from GitHub Actions UI
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call weekly digest endpoint
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_APP_URL }}/api/internal/send-digests" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            --max-time 120
