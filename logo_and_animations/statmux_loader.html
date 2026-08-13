@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>statmux loader</title>
+<style>
+  html,body{margin:0;height:100%;background:#08090b;display:flex;align-items:center;justify-content:center;}
+  .wrap{width:200px;height:200px;}
+
+  .pane{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.85);}
+  .pane-left{animation:paneLeft 2.6s ease-in-out infinite;}
+  .pane-tr{animation:paneTR 2.6s ease-in-out infinite;}
+  .pane-br{animation:paneBR 2.6s ease-in-out infinite;}
+
+  @keyframes paneLeft{
+    0%,8%{opacity:0;transform:scale(.85);}
+    18%{opacity:1;transform:scale(1);}
+    88%{opacity:1;transform:scale(1);}
+    100%{opacity:0;transform:scale(.85);}
+  }
+  @keyframes paneTR{
+    0%,16%{opacity:0;transform:scale(.85);}
+    26%{opacity:1;transform:scale(1);}
+    88%{opacity:1;transform:scale(1);}
+    100%{opacity:0;transform:scale(.85);}
+  }
+  @keyframes paneBR{
+    0%,24%{opacity:0;transform:scale(.85);}
+    34%{opacity:1;transform:scale(1);}
+    88%{opacity:1;transform:scale(1);}
+    100%{opacity:0;transform:scale(.85);}
+  }
+
+  .dot{transform-box:fill-box;transform-origin:center;}
+  .dot-a{animation:dotPulse 2.6s ease-in-out infinite;animation-delay:.1s;}
+  .dot-b{animation:dotPulse 2.6s ease-in-out infinite;animation-delay:.25s;}
+  .dot-c{animation:dotPulse 2.6s ease-in-out infinite;animation-delay:.4s;}
+  @keyframes dotPulse{
+    0%,40%{transform:scale(1);opacity:.6;}
+    45%{transform:scale(1.5);opacity:1;}
+    50%{transform:scale(1);opacity:.6;}
+    55%{transform:scale(1.5);opacity:1;}
+    60%,100%{transform:scale(1);opacity:.6;}
+  }
+
+  .prompt{opacity:0;animation:promptIn 2.6s ease-in-out infinite;}
+  @keyframes promptIn{
+    0%,18%{opacity:0;}
+    26%{opacity:1;}
+    88%{opacity:1;}
+    100%{opacity:0;}
+  }
+  .cursor{animation:blink 1s steps(1,end) infinite;}
+  @keyframes blink{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+
+  .bar{transform-box:fill-box;transform-origin:bottom;transform:scaleY(0);}
+  .bar1{animation:barGrow 2.6s ease-in-out infinite;animation-delay:0s;}
+  .bar2{animation:barGrow 2.6s ease-in-out infinite;animation-delay:.06s;}
+  .bar3{animation:barGrow 2.6s ease-in-out infinite;animation-delay:.12s;}
+  .bar4{animation:barGrow 2.6s ease-in-out infinite;animation-delay:.18s;}
+  .bar5{animation:barGrow 2.6s ease-in-out infinite;animation-delay:.24s;}
+  @keyframes barGrow{
+    0%,38%{transform:scaleY(0);}
+    50%{transform:scaleY(1);}
+    88%{transform:scaleY(1);}
+    100%{transform:scaleY(0);}
+  }
+
+  .spark{stroke-dasharray:60;stroke-dashoffset:60;opacity:0;animation:sparkDraw 2.6s ease-in-out infinite;}
+  @keyframes sparkDraw{
+    0%,42%{opacity:0;stroke-dashoffset:60;}
+    46%{opacity:1;}
+    64%{stroke-dashoffset:0;}
+    88%{opacity:1;stroke-dashoffset:0;}
+    100%{opacity:0;stroke-dashoffset:0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="6" y="6" width="188" height="188" rx="42" fill="#0b0d10" stroke="#242933" stroke-width="2"/>
+
+  <g class="pane pane-left">
+    <rect x="24" y="24" width="70" height="152" rx="10" fill="#12151a" stroke="#242933" stroke-width="1.5"/>
+    <circle class="dot dot-a" cx="34" cy="36" r="4" fill="#34d399"/>
+    <text class="prompt" x="59" y="116" font-family="'JetBrains Mono','Fira Code',monospace" font-size="46" font-weight="700" fill="#34d399" text-anchor="middle">&gt;<tspan class="cursor">_</tspan></text>
+  </g>
+
+  <g class="pane pane-tr">
+    <rect x="106" y="24" width="70" height="68" rx="10" fill="#12151a" stroke="#242933" stroke-width="1.5"/>
+    <circle class="dot dot-b" cx="116" cy="36" r="4" fill="#60a5fa"/>
+    <rect class="bar bar1" x="120" y="58" width="6" height="24" fill="#60a5fa"/>
+    <rect class="bar bar2" x="131" y="50" width="6" height="32" fill="#60a5fa"/>
+    <rect class="bar bar3" x="142" y="42" width="6" height="40" fill="#60a5fa"/>
+    <rect class="bar bar4" x="153" y="54" width="6" height="28" fill="#60a5fa"/>
+    <rect class="bar bar5" x="164" y="46" width="6" height="36" fill="#60a5fa"/>
+  </g>
+
+  <g class="pane pane-br">
+    <rect x="106" y="108" width="70" height="68" rx="10" fill="#12151a" stroke="#242933" stroke-width="1.5"/>
+    <circle class="dot dot-c" cx="116" cy="120" r="4" fill="#fbbf24"/>
+    <polyline class="spark" points="120,158 132,150 143,154 154,140 165,146" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+</body>
+</html>
