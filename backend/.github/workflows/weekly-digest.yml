@@ -11,6 +11,6 @@ jobs:
     steps:
       - name: Call weekly digest endpoint
         run: |
-          curl -f -X POST "${{ secrets.RENDER_APP_URL }}/api/internal/send-digests" \
+          curl -f -X POST "${{ secrets.BACKEND_URL }}/api/internal/send-digests" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             --max-time 120
