@@ -76,6 +76,15 @@ export default function ComparePage() {
   const [data, setData] = useState<CompareResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  function handleCopyLink() {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   useEffect(() => {
     if (!user1 || !user2) {
@@ -109,7 +118,7 @@ export default function ComparePage() {
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <LoadingLogo size={80} />
         <p className="mt-4 font-mono text-sm text-muted-foreground">
-          Comparing @{user1} vs @{user2}...
+          Multiplexing comparison metrics...
         </p>
       </div>
     )
@@ -124,7 +133,7 @@ export default function ComparePage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Comparison Error</h1>
-            <p className="text-sm text-muted-foreground">{error || 'Unable to load profile data.'}</p>
+            <p className="text-sm text-muted-foreground">{error || 'Failed to load comparison data.'}</p>
           </div>
           <div className="pt-2">
             <Link
@@ -178,6 +187,23 @@ export default function ComparePage() {
             </span>
           </Link>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {copied ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                  Link copied!
+                </>
+              ) : (
+                <>
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Share comparison
+                </>
+              )}
+            </button>
             <Link
               href="/login"
               className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
