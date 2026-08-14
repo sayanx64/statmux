@@ -11,6 +11,6 @@ jobs:
     steps:
       - name: Call refresh endpoint
         run: |
-          curl -f -X POST "${{ secrets.RENDER_APP_URL }}/api/internal/refresh-all" \
+          curl -f -X POST "${{ secrets.BACKEND_URL }}/api/internal/refresh-all" \
             -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
             --max-time 60
