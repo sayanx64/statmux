@@ -46,6 +46,8 @@ export type Profile = {
   github_username: string | null
   codeforces_handle: string | null
   leetcode_username: string | null
+  display_name?: string | null
+  email?: string | null
   updated_at: string
 }
 
@@ -69,6 +71,7 @@ export async function putProfile(body: {
   github_username?: string
   codeforces_handle?: string
   leetcode_username?: string
+  display_name?: string
 }): Promise<Profile> {
   const res = await fetch(`${BASE}/api/profile`, {
     method: 'PUT',

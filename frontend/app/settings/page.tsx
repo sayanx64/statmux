@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Monitor, Moon, Sun, AlertTriangle, Loader2, Check } from 'lucide-react'
+import { Monitor, Moon, Sun, AlertTriangle, Loader2, Check, UserCheck, Shield } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input, Label } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { useTheme } from '@/components/theme-provider'
-import { deleteStats, getDigestSubscription, putDigestSubscription } from '@/lib/api'
+import { useAuth } from '@/components/auth-provider'
+import { deleteStats, getDigestSubscription, putDigestSubscription, getProfile, putProfile } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 function Toggle({
@@ -46,8 +48,14 @@ const themeOptions = [
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
+  const { user } = useAuth()
+
+  const [displayName, setDisplayName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [nameSaved, setNameSaved] = useState(false)
+
   const [prefs, setPrefs] = useState({
-    weeklyDigest: false,
+    weeklyDigest: true,
     syncAlerts: true,
     productUpdates: false,
     autoSync: true,
@@ -58,7 +66,7 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false)
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Load preferences from backend & localStorage on mount
+  // Load preferences and profile details from backend & localStorage on mount
   useEffect(() => {
     // 1. Load local preferences
     try {
@@ -77,7 +85,18 @@ export default function SettingsPage() {
         setPrefs((p) => ({ ...p, weeklyDigest: res.subscribed }))
       })
       .catch((e) => console.log('Could not load digest subscription:', e.message))
-  }, [])
+
+    // 3. Load profile for display name
+    getProfile()
+      .then((p) => {
+        if (p?.display_name) {
+          setDisplayName(p.display_name)
+        } else if (user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.user_name) {
+          setDisplayName(user.user_metadata.display_name || user.user_metadata.full_name || user.user_metadata.user_name)
+        }
+      })
+      .catch((e) => console.log('Could not load profile:', e.message))
+  }, [user])
 
   function showSavedToast(key: string) {
     setSavedKey(key)
@@ -110,6 +129,21 @@ export default function SettingsPage() {
     } catch (e: any) {
       console.error('Failed to update digest subscription:', e)
       set('weeklyDigest', !checked)
+    }
+  }
+
+  async function handleSaveDisplayName(e?: React.FormEvent) {
+    if (e) e.preventDefault()
+    setSavingName(true)
+    setNameSaved(false)
+    try {
+      await putProfile({ display_name: displayName })
+      setNameSaved(true)
+      setTimeout(() => setNameSaved(false), 2500)
+    } catch (err: any) {
+      console.error('Failed to save display name:', err)
+    } finally {
+      setSavingName(false)
     }
   }
 
@@ -175,17 +209,66 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Account</CardTitle>
-          <CardDescription>Basic details for your statmux account.</CardDescription>
+          <CardDescription>Basic details for your authenticated statmux account.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-5 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="displayName">Display name</Label>
-            <Input id="displayName" defaultValue="Ada Lovelace" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" defaultValue="statmux@sayan.cyou" />
-          </div>
+        <CardContent>
+          <form onSubmit={handleSaveDisplayName} className="space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="displayName">Display name</Label>
+                  {nameSaved && (
+                    <span className="flex items-center gap-1 text-xs text-success animate-in fade-in duration-200">
+                      <Check className="h-3.5 w-3.5" />
+                      Saved
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    id="displayName"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="e.g. Satoshi Nakamoto or your handle"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    size="sm"
+                    disabled={savingName}
+                    className="shrink-0"
+                  >
+                    {savingName ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save'}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Visible on your public profile cards and weekly digest emails.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="email">Email</Label>
+                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Shield className="h-3 w-3 text-emerald-400" />
+                    Verified Auth
+                  </span>
+                </div>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user?.email || ''}
+                  disabled
+                  readOnly
+                  className="bg-muted/40 text-muted-foreground cursor-not-allowed"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Your primary authentication address.
+                </p>
+              </div>
+            </div>
+          </form>
         </CardContent>
       </Card>
 

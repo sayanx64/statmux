@@ -1,33 +1,74 @@
 import { Router } from 'express';
 import { supabase } from '../lib/supabaseClient.js';
 import { requireAuth } from '../lib/requireAuth.js';
+import { sendWelcomeEmail } from '../lib/digestEngine.js';
 
 const router = Router();
 router.use(requireAuth);
 
 // GET /api/profile
-// Returns the logged-in user's stored handles. If they haven't set any up
-// yet, this returns null — that's expected for a brand new user.
+// Returns the logged-in user's stored handles and account details.
 router.get('/', async (req, res) => {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('user_id', req.user.id)
-    .maybeSingle(); // maybeSingle = don't error if zero rows, unlike .single()
+    .maybeSingle();
 
   if (error) {
     console.error('GET /api/profile error:', error.message);
     return res.status(500).json({ error: error.message });
   }
 
-  res.json(data);
+  // Check if this is a first-time user who needs welcome email / default digest subscription
+  const welcomeSent = req.user.user_metadata?.welcome_sent;
+  if (!welcomeSent && req.user.email) {
+    const rawName = req.user.user_metadata?.display_name || req.user.user_metadata?.full_name || req.user.user_metadata?.user_name || data?.github_username || '';
+    sendWelcomeEmail({ userId: req.user.id, email: req.user.email, displayName: rawName })
+      .then(() => console.log(`[welcome-email] Sent to ${req.user.email}`))
+      .catch((err) => console.error('[welcome-email] Failed to send:', err.message));
+
+    // Mark welcome_sent: true & digest_subscribed: true
+    supabase.auth.admin.updateUserById(req.user.id, {
+      user_metadata: {
+        ...(req.user.user_metadata || {}),
+        welcome_sent: true,
+        digest_subscribed: true,
+      },
+    }).catch((err) => console.error('[welcome-meta] Error updating user metadata:', err.message));
+
+    supabase.from('digest_subscriptions')
+      .upsert({ user_id: req.user.id, subscribed: true })
+      .catch(() => {});
+  }
+
+  const displayName = req.user.user_metadata?.display_name ?? (req.user.user_metadata?.full_name || req.user.user_metadata?.user_name || data?.github_username || '');
+
+  res.json({
+    ...(data || { user_id: req.user.id, github_username: null, codeforces_handle: null, leetcode_username: null }),
+    email: req.user.email,
+    display_name: displayName,
+  });
 });
 
 // PUT /api/profile
-// Body: { github_username?, codeforces_handle?, leetcode_username? }
-// Creates the profile row if it doesn't exist yet, updates it if it does.
+// Body: { github_username?, codeforces_handle?, leetcode_username?, display_name? }
 router.put('/', async (req, res) => {
-  const { github_username, codeforces_handle, leetcode_username } = req.body;
+  const { github_username, codeforces_handle, leetcode_username, display_name } = req.body;
+
+  // 1. Update display_name in user metadata if provided
+  if (display_name !== undefined) {
+    try {
+      await supabase.auth.admin.updateUserById(req.user.id, {
+        user_metadata: {
+          ...(req.user.user_metadata || {}),
+          display_name: typeof display_name === 'string' ? display_name.trim() : display_name,
+        },
+      });
+    } catch (err) {
+      console.error('[PUT /api/profile] display_name update error:', err.message);
+    }
+  }
 
   const { data, error } = await supabase
     .from('profiles')
@@ -49,13 +90,17 @@ router.put('/', async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  res.json(data);
+  res.json({
+    ...data,
+    email: req.user.email,
+    display_name: display_name !== undefined ? (typeof display_name === 'string' ? display_name.trim() : display_name) : (req.user.user_metadata?.display_name || ''),
+  });
 });
 
 // GET /api/profile/digest-subscription
-// Get weekly digest subscription status for current user
+// Get weekly digest subscription status for current user (defaults to true for opt-in on signup)
 router.get('/digest-subscription', async (req, res) => {
-  let subscribed = false;
+  let subscribed = true;
   let lastSentAt = null;
 
   try {
@@ -66,7 +111,7 @@ router.get('/digest-subscription', async (req, res) => {
       .maybeSingle();
 
     if (!subErr && subData) {
-      subscribed = !!subData.subscribed;
+      subscribed = Boolean(subData.subscribed);
       lastSentAt = subData.last_sent_at || null;
       return res.json({ subscribed, last_sent_at: lastSentAt });
     }
@@ -77,7 +122,7 @@ router.get('/digest-subscription', async (req, res) => {
   // Fallback to user metadata
   const metaSub = req.user.user_metadata?.digest_subscribed;
   if (metaSub !== undefined) {
-    subscribed = !!metaSub;
+    subscribed = Boolean(metaSub);
     lastSentAt = req.user.user_metadata?.last_digest_sent_at || null;
   }
 
@@ -106,7 +151,10 @@ router.put('/digest-subscription', async (req, res) => {
 
   try {
     await supabase.auth.admin.updateUserById(req.user.id, {
-      user_metadata: { digest_subscribed: isSubscribed },
+      user_metadata: {
+        ...(req.user.user_metadata || {}),
+        digest_subscribed: isSubscribed,
+      },
     });
   } catch (err) {
     console.error('[digest-sub:put] User metadata update error:', err.message);

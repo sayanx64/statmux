@@ -472,3 +472,107 @@ export async function sendDigestToUser(userId, emailOverride = null) {
 
   return { success: true, email, username: digestData.username };
 }
+
+/**
+ * Send welcome onboarding email to a newly registered user.
+ */
+export async function sendWelcomeEmail({ userId, email, displayName }) {
+  if (!email) return { success: false, reason: 'missing_email' };
+
+  const name = displayName || 'Developer';
+  const token = generateUnsubscribeToken(userId);
+  const unsubscribeUrl = `${BASE_URL}/api/digest/unsubscribe?uid=${encodeURIComponent(userId)}&token=${token}`;
+  const dashboardUrl = `${BASE_URL}/profile`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to statmux</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0d10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f4f4f5;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #0b0d10; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #12151a; border: 1px solid #242933; border-radius: 16px; overflow: hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 32px; background: linear-gradient(180deg, #181c24 0%, #12151a 100%); border-bottom: 1px solid #242933; text-align: center;">
+              <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.5px;">
+                statmux
+              </h1>
+              <p style="margin: 6px 0 0 0; font-size: 13px; color: #34d399; font-weight: 500;">
+                unified coding analytics, multiplexed
+              </p>
+            </td>
+          </tr>
+
+          <!-- Welcome Message -->
+          <tr>
+            <td style="padding: 32px;">
+              <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #ffffff;">
+                Welcome aboard, ${name}! 👋
+              </h2>
+              <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #a1a1aa;">
+                Your statmux account is officially active. Multiplex your GitHub commits, Codeforces ratings, and LeetCode solves into a single unified analytics dashboard.
+              </p>
+
+              <div style="background-color: #0b0d10; border: 1px solid #242933; border-radius: 12px; padding: 20px; margin-bottom: 28px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #34d399;">
+                  Features available in your account
+                </h3>
+                <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #d4d4d8;">
+                  <li><strong>Unified Telemetry:</strong> Track commit consistency, algorithm problem counts, and contest ratings in one place.</li>
+                  <li><strong>Code Health Scoring:</strong> Benchmark your activity with our 4-pillar grading engine (A–D).</li>
+                  <li><strong>Public Profile Card:</strong> Share your verified stats card with recruiters and peers.</li>
+                  <li><strong>Weekly Email Digest:</strong> Automatically receive an activity summary in your inbox every Monday morning.</li>
+                </ul>
+              </div>
+
+              <!-- CTA Button -->
+              <div style="text-align: center; margin: 32px 0 16px 0;">
+                <a href="${dashboardUrl}" target="_blank" style="display: inline-block; background-color: #10b981; color: #09090b; font-size: 14px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 10px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+                  Configure Your Handles &rarr;
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px 32px; background-color: #141417; border-top: 1px solid #27272a; text-align: center;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #71717a;">
+                You are receiving this welcome email because an account was registered on statmux.
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #71717a;">
+                <a href="${unsubscribeUrl}" target="_blank" style="color: #a1a1aa; text-decoration: underline;">
+                  Unsubscribe from emails
+                </a>
+                &bull;
+                <a href="${BASE_URL}/terms" target="_blank" style="color: #a1a1aa; text-decoration: underline;">
+                  Terms &amp; Privacy
+                </a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+
+  const transporter = getMailTransport();
+  await transporter.sendMail({
+    from: `"statmux" <${SMTP_USER}>`,
+    to: email,
+    subject: `Welcome to statmux — unified coding analytics`,
+    html,
+  });
+
+  return { success: true, email };
+}
+
