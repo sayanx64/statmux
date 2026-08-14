@@ -10,15 +10,35 @@ once.
 
 import { supabase } from './supabaseClient.js';
 
+function getGithubHeaders() {
+  const headers = {
+    'User-Agent': 'statmux-app/1.0',
+    'Accept': 'application/vnd.github.v3+json',
+  };
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 export async function fetchGithubStats(username) {
-  const res = await fetch(`https://api.github.com/users/${username}`);
-  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+  const headers = getGithubHeaders();
+  const res = await fetch(`https://api.github.com/users/${username}`, { headers });
+  if (!res.ok) {
+    if (res.status === 403 || res.status === 429) {
+      throw new Error('GitHub API rate limit reached. Add GITHUB_TOKEN to backend environment for 5,000 req/hr.');
+    }
+    throw new Error(`GitHub API ${res.status}`);
+  }
   const data = await res.json();
   
   // 1. Fetch contribution calendar
   let contributionWeeks = [];
   try {
-    const calRes = await fetch(`https://github.com/users/${username}/contributions`);
+    const calRes = await fetch(`https://github.com/users/${username}/contributions`, {
+      headers: { 'User-Agent': 'statmux-app/1.0' },
+    });
     if (calRes.ok) {
       const html = await calRes.text();
       const matches = [...html.matchAll(/(\d+|No) contributions on (.*?)\./g)];
@@ -37,7 +57,7 @@ export async function fetchGithubStats(username) {
   // 2. Fetch recent public events
   let recentEvents = [];
   try {
-    const evRes = await fetch(`https://api.github.com/users/${username}/events/public`);
+    const evRes = await fetch(`https://api.github.com/users/${username}/events/public`, { headers });
     if (evRes.ok) {
       const events = await evRes.json();
       recentEvents = events
