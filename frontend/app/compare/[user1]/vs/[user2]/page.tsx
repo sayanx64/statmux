@@ -90,7 +90,8 @@ export default function ComparePage() {
       return
     }
 
-    fetch(`/api/public/compare/${encodeURIComponent(user1)}/${encodeURIComponent(user2)}`)
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || ''
+    fetch(`${apiBase}/api/public/compare/${encodeURIComponent(user1)}/${encodeURIComponent(user2)}`)
       .then(async (res) => {
         const json = await res.json()
         if (!res.ok) {

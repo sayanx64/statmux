@@ -67,7 +67,8 @@ export default function PublicProfilePage() {
       return
     }
 
-    fetch(`/api/public/${encodeURIComponent(username)}`)
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || ''
+    fetch(`${apiBase}/api/public/${encodeURIComponent(username)}`)
       .then(async (res) => {
         if (!res.ok) {
           setNotFound(true)

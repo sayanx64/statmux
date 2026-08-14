@@ -1,3 +1,5 @@
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -10,7 +12,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3001/api/:path*', // Proxy to Backend
+        destination: `${backendUrl}/api/:path*`, // Proxy to Backend in local and prod
       },
     ]
   },
