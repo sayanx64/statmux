@@ -1,10 +1,22 @@
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { supabase } from './supabaseClient.js';
 
 // Base URL for links in email
 const BASE_URL = process.env.FRONTEND_URL || 'https://statmux.sayan.cyou';
-const SMTP_USER = process.env.SMTP_USER || 'statmux@sayan.cyou';
+const FROM_ADDRESS = process.env.RESEND_FROM || 'statmux <statmux@sayan.cyou>';
+
+/**
+ * Returns an initialised Resend client.
+ * Logs a warning if the API key is missing so Railway logs catch it early.
+ */
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[resend] RESEND_API_KEY not set — emails will fail.');
+  }
+  return new Resend(apiKey || '');
+}
 
 /**
  * Generate a cryptographically signed unsubscribe token for a user.
@@ -25,30 +37,6 @@ export function verifyUnsubscribeToken(userId, token) {
   } catch {
     return false;
   }
-}
-
-/**
- * Create a nodemailer transport from SMTP environment variables.
- */
-export function getMailTransport() {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '465', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    console.warn('[nodemailer] SMTP credentials not fully set in environment (SMTP_HOST, SMTP_USER, SMTP_PASS)');
-  }
-
-  return nodemailer.createTransport({
-    host: host || 'localhost',
-    port,
-    secure: port === 465,
-    auth: {
-      user: user || '',
-      pass: pass || '',
-    },
-  });
 }
 
 /**
@@ -458,13 +446,17 @@ export async function sendDigestToUser(userId, emailOverride = null) {
   });
 
   // 5. Send via nodemailer
-  const transporter = getMailTransport();
-  await transporter.sendMail({
-    from: `"statmux" <${SMTP_USER}>`,
+  const resend = getResendClient();
+  const { error: sendError } = await resend.emails.send({
+    from: FROM_ADDRESS,
     to: email,
     subject: `Weekly stats digest: Code Health ${digestData.health.current}/100 (${digestData.health.grade})`,
     html,
   });
+
+  if (sendError) {
+    throw new Error(`Resend error: ${sendError.message}`);
+  }
 
   // 6. Update last_sent_at in digest_subscriptions or user_metadata
   const now = new Date().toISOString();
@@ -571,13 +563,17 @@ export async function sendWelcomeEmail({ userId, email, displayName }) {
 </html>
   `.trim();
 
-  const transporter = getMailTransport();
-  await transporter.sendMail({
-    from: `"statmux" <${SMTP_USER}>`,
+  const resend = getResendClient();
+  const { error: sendError } = await resend.emails.send({
+    from: FROM_ADDRESS,
     to: email,
     subject: `Welcome to statmux — unified coding analytics`,
     html,
   });
+
+  if (sendError) {
+    throw new Error(`Resend error: ${sendError.message}`);
+  }
 
   return { success: true, email };
 }
