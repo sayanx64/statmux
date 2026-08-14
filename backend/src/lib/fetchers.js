@@ -26,10 +26,13 @@ export async function fetchGithubStats(username) {
   const headers = getGithubHeaders();
   const res = await fetch(`https://api.github.com/users/${username}`, { headers });
   if (!res.ok) {
+    if (res.status === 404) {
+      throw new Error(`GitHub user "${username}" not found. Check your username in Profile settings.`);
+    }
     if (res.status === 403 || res.status === 429) {
       throw new Error('GitHub API rate limit reached. Add GITHUB_TOKEN to backend environment for 5,000 req/hr.');
     }
-    throw new Error(`GitHub API ${res.status}`);
+    throw new Error(`GitHub API error (${res.status}). Please try again later.`);
   }
   const data = await res.json();
   

@@ -190,6 +190,14 @@ export default function RefreshPage() {
                 {s === 'error' && errMsg ? (
                   <div className="rounded-lg border border-destructive/25 bg-destructive/8 p-3 text-sm text-destructive">
                     {errMsg}
+                    {errMsg.toLowerCase().includes('not found') && (
+                      <a
+                        href="/profile"
+                        className="mt-2 flex items-center gap-1 text-xs font-medium text-destructive underline underline-offset-2 hover:opacity-80"
+                      >
+                        → Fix in Profile settings
+                      </a>
+                    )}
                   </div>
                 ) : s === 'syncing' ? (
                   <div className="space-y-2">
