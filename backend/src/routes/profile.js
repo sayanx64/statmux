@@ -6,6 +6,57 @@ import { sendWelcomeEmail } from '../lib/digestEngine.js';
 const router = Router();
 router.use(requireAuth);
 
+// POST /api/profile/onboarding
+// Called by the frontend on every SIGNED_IN auth event (email + GitHub OAuth).
+// Idempotent: checks welcome_sent flag before sending, safe to call multiple times.
+router.post('/onboarding', async (req, res) => {
+  const welcomeSent = req.user.user_metadata?.welcome_sent;
+
+  // Already onboarded — nothing to do
+  if (welcomeSent) {
+    return res.json({ status: 'already_onboarded' });
+  }
+
+  if (!req.user.email) {
+    return res.json({ status: 'no_email' });
+  }
+
+  const rawName =
+    req.user.user_metadata?.display_name ||
+    req.user.user_metadata?.full_name ||
+    req.user.user_metadata?.user_name ||
+    req.user.user_metadata?.preferred_username ||
+    '';
+
+  // Fire welcome email (don't await — fast response to client)
+  sendWelcomeEmail({ userId: req.user.id, email: req.user.email, displayName: rawName })
+    .then(() => console.log(`[welcome-email] Sent to ${req.user.email}`))
+    .catch((err) => console.error('[welcome-email] Failed:', err.message));
+
+  // Mark welcome_sent: true & digest_subscribed: true in user metadata
+  try {
+    await supabase.auth.admin.updateUserById(req.user.id, {
+      user_metadata: {
+        ...(req.user.user_metadata || {}),
+        welcome_sent: true,
+        digest_subscribed: true,
+      },
+    });
+  } catch (err) {
+    console.error('[welcome-meta] Error updating user metadata:', err.message);
+  }
+
+  // Also write to digest_subscriptions table
+  try {
+    await supabase.from('digest_subscriptions')
+      .upsert({ user_id: req.user.id, subscribed: true }, { onConflict: 'user_id' });
+  } catch (err) {
+    console.log('[digest-sub:init] Table fallback:', err.message);
+  }
+
+  return res.json({ status: 'onboarded', email: req.user.email });
+});
+
 // GET /api/profile
 // Returns the logged-in user's stored handles and account details.
 router.get('/', async (req, res) => {
@@ -18,35 +69,6 @@ router.get('/', async (req, res) => {
   if (error) {
     console.error('GET /api/profile error:', error.message);
     return res.status(500).json({ error: error.message });
-  }
-
-  // Check if this is a first-time user who needs welcome email / default digest subscription
-  const welcomeSent = req.user.user_metadata?.welcome_sent;
-  if (!welcomeSent && req.user.email) {
-    const rawName = req.user.user_metadata?.display_name || req.user.user_metadata?.full_name || req.user.user_metadata?.user_name || data?.github_username || '';
-    sendWelcomeEmail({ userId: req.user.id, email: req.user.email, displayName: rawName })
-      .then(() => console.log(`[welcome-email] Sent to ${req.user.email}`))
-      .catch((err) => console.error('[welcome-email] Failed to send:', err.message));
-
-    // Mark welcome_sent: true & digest_subscribed: true
-    try {
-      await supabase.auth.admin.updateUserById(req.user.id, {
-        user_metadata: {
-          ...(req.user.user_metadata || {}),
-          welcome_sent: true,
-          digest_subscribed: true,
-        },
-      });
-    } catch (err) {
-      console.error('[welcome-meta] Error updating user metadata:', err.message);
-    }
-
-    try {
-      await supabase.from('digest_subscriptions')
-        .upsert({ user_id: req.user.id, subscribed: true });
-    } catch (err) {
-      console.log('[digest-sub:init] Table fallback:', err.message);
-    }
   }
 
   const displayName = req.user.user_metadata?.display_name ?? (req.user.user_metadata?.full_name || req.user.user_metadata?.user_name || data?.github_username || '');

@@ -4,6 +4,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
 type AuthContextValue = {
   session: Session | null
   user: User | null
@@ -36,9 +38,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     // Listen for auth state changes (login, logout, token refresh)
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
       setLoading(false)
+
+      // Fire onboarding silently on every sign-in (email + GitHub OAuth).
+      // The backend is idempotent — it checks welcome_sent before sending.
+      if (event === 'SIGNED_IN' && session?.access_token) {
+        fetch(`${API_URL}/api/profile/onboarding`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        }).catch(() => {
+          // Silent fail — non-critical background operation
+        })
+      }
     })
 
     return () => listener.subscription.unsubscribe()
