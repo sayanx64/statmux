@@ -497,15 +497,12 @@ export async function sendWelcomeEmail({ userId, email, displayName }) {
     <tr>
       <td align="center">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; background-color: #12151a; border: 1px solid #242933; border-radius: 16px; overflow: hidden;">
-          <!-- Header -->
+          <!-- Header Banner -->
           <tr>
-            <td style="padding: 32px; background: linear-gradient(180deg, #181c24 0%, #12151a 100%); border-bottom: 1px solid #242933; text-align: center;">
-              <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.5px;">
-                statmux
-              </h1>
-              <p style="margin: 6px 0 0 0; font-size: 13px; color: #34d399; font-weight: 500;">
-                unified coding analytics, multiplexed
-              </p>
+            <td style="padding: 28px 24px 20px 24px; background: linear-gradient(180deg, #181c24 0%, #12151a 100%); border-bottom: 1px solid #242933; text-align: center;">
+              <a href="${BASE_URL}" target="_blank" style="text-decoration: none; display: inline-block;">
+                <img src="${BASE_URL}/statmux_logo_full.svg" alt="statmux — unified coding analytics, multiplexed" width="320" style="display: block; max-width: 100%; height: auto; margin: 0 auto; border: 0;" />
+              </a>
             </td>
           </tr>
 
