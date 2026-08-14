@@ -29,17 +29,24 @@ router.get('/', async (req, res) => {
       .catch((err) => console.error('[welcome-email] Failed to send:', err.message));
 
     // Mark welcome_sent: true & digest_subscribed: true
-    supabase.auth.admin.updateUserById(req.user.id, {
-      user_metadata: {
-        ...(req.user.user_metadata || {}),
-        welcome_sent: true,
-        digest_subscribed: true,
-      },
-    }).catch((err) => console.error('[welcome-meta] Error updating user metadata:', err.message));
+    try {
+      await supabase.auth.admin.updateUserById(req.user.id, {
+        user_metadata: {
+          ...(req.user.user_metadata || {}),
+          welcome_sent: true,
+          digest_subscribed: true,
+        },
+      });
+    } catch (err) {
+      console.error('[welcome-meta] Error updating user metadata:', err.message);
+    }
 
-    supabase.from('digest_subscriptions')
-      .upsert({ user_id: req.user.id, subscribed: true })
-      .catch(() => {});
+    try {
+      await supabase.from('digest_subscriptions')
+        .upsert({ user_id: req.user.id, subscribed: true });
+    } catch (err) {
+      console.log('[digest-sub:init] Table fallback:', err.message);
+    }
   }
 
   const displayName = req.user.user_metadata?.display_name ?? (req.user.user_metadata?.full_name || req.user.user_metadata?.user_name || data?.github_username || '');
