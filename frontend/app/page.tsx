@@ -9,6 +9,7 @@ import { ActivityTimeline } from '@/components/activity-timeline'
 import { PlatformHealth } from '@/components/platform-health'
 import { ContributionsPanel } from '@/components/contributions-panel'
 import { SyncStatusCard } from '@/components/sync-status-card'
+import { AdBanner } from '@/components/ad-banner'
 import { Badge } from '@/components/ui/badge'
 import { getStats, latestPerSource, seriesFor, trendPercent, relativeTime, type StatSnapshot } from '@/lib/api'
 import { calculateCodeHealth } from '@/lib/scoring'
@@ -167,6 +168,10 @@ export default function OverviewPage() {
             <div>
               <SyncStatusCard lastSyncLabel={lastSyncLabel} />
             </div>
+          </section>
+
+          <section aria-label="Sponsors" className="flex justify-center pt-2 pb-4">
+            <AdBanner />
           </section>
         </>
       )}

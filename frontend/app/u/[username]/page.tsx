@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { PlatformIcon } from '@/components/platform-icon'
 import { LoadingLogo } from '@/components/loading-logo'
+import { AdBanner } from '@/components/ad-banner'
 import { relativeTime } from '@/lib/api'
 
 interface PublicProfileData {
@@ -384,6 +385,11 @@ export default function PublicProfilePage() {
                 )}
               </CardContent>
             </Card>
+          </div>
+
+          {/* Ad / Sponsor Banner */}
+          <div className="flex justify-center py-2">
+            <AdBanner />
           </div>
 
           {/* Footer Card */}
