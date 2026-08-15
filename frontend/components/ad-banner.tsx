@@ -19,7 +19,7 @@ export function AdBanner({ className = '', align = 'center' }: AdBannerProps) {
       </div>
       <div className="overflow-hidden rounded-xl border border-border/70 bg-card/60 p-1.5 shadow-sm transition-all hover:border-border">
         <iframe
-          src="https://ad-swap.web.app/frame.html?site=V9n1x1p2LEzJxtkHJkmg&theme=dark"
+          src="https://ad-swap.web.app/frame.html?site=ezwb30EtErrO29y5MfOa&theme=dark"
           style={{ border: 0, width: '300px', height: '130px', maxWidth: '100%', display: 'block' }}
           loading="lazy"
           sandbox="allow-scripts allow-popups"

@@ -74,7 +74,7 @@ export default function RootLayout({
         </ThemeProvider>
         <noscript>
           <iframe
-            src="https://ad-swap.web.app/frame.html?site=V9n1x1p2LEzJxtkHJkmg"
+            src="https://ad-swap.web.app/frame.html?site=ezwb30EtErrO29y5MfOa"
             style={{ border: 0, width: '300px', height: '130px', maxWidth: '100%' }}
             loading="lazy"
             sandbox="allow-scripts allow-popups"
