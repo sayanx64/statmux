@@ -8,6 +8,7 @@ import { signInWithEmail, signUpWithEmail, signInWithGithub } from '@/lib/supaba
 import { cn } from '@/lib/utils'
 
 import { useAuth } from '@/components/auth-provider'
+import { AdBanner } from '@/components/ad-banner'
 
 type Mode = 'signin' | 'signup'
 
@@ -211,6 +212,11 @@ export default function LoginPage() {
             Terms of Service
           </Link>.
         </p>
+
+        {/* Ad Swap verification embed */}
+        <div className="flex justify-center pt-2">
+          <AdBanner />
+        </div>
       </div>
     </div>
   )
