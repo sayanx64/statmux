@@ -72,6 +72,15 @@ export default function RootLayout({
             <DashboardShell>{children}</DashboardShell>
           </AuthProvider>
         </ThemeProvider>
+        <noscript>
+          <iframe
+            src="https://ad-swap.web.app/frame.html?site=V9n1x1p2LEzJxtkHJkmg"
+            style={{ border: 0, width: '300px', height: '130px', maxWidth: '100%' }}
+            loading="lazy"
+            sandbox="allow-scripts allow-popups"
+            title="Ad"
+          />
+        </noscript>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

@@ -22,7 +22,7 @@ export function AdBanner({ className = '', align = 'center' }: AdBannerProps) {
           src="https://ad-swap.web.app/frame.html?site=V9n1x1p2LEzJxtkHJkmg&theme=dark"
           style={{ border: 0, width: '300px', height: '130px', maxWidth: '100%', display: 'block' }}
           loading="lazy"
-          sandbox="allow-scripts allow-popups allow-same-origin"
+          sandbox="allow-scripts allow-popups"
           title="Ad"
         />
       </div>
