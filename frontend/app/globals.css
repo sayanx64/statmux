@@ -155,3 +155,46 @@
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   }
 }
+
+/* ─── Landing page styles (namespaced lp-) ───────────────────────────── */
+
+@keyframes lp-blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(3%, -5%) scale(1.05); }
+  66%       { transform: translate(-4%, 3%) scale(0.96); }
+}
+
+.lp-blob {
+  animation: lp-blob-drift 9s ease-in-out infinite;
+}
+
+.lp-blob-delayed {
+  animation: lp-blob-drift 9s ease-in-out infinite;
+  animation-delay: -4.5s;
+}
+
+/* Fade-up scroll reveal */
+.lp-fade-up {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.lp-fade-up.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .lp-blob,
+  .lp-blob-delayed {
+    animation: none;
+  }
+  .lp-fade-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
