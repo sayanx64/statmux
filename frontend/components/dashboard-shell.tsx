@@ -9,7 +9,7 @@ import { useAuth } from '@/components/auth-provider'
 import { LoadingLogo } from '@/components/loading-logo'
 
 // Pages that don't need the dashboard shell or auth
-const PUBLIC_PATHS = ['/login', '/auth/callback', '/terms', '/u', '/compare']
+const PUBLIC_PATHS = ['/login', '/auth/callback', '/terms', '/u', '/compare', '/landing']
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -21,7 +21,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !session && !isPublic) {
-      router.push('/login')
+      router.push('/landing')
     }
   }, [loading, session, isPublic, router])
 
